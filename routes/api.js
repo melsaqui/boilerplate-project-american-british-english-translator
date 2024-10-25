@@ -10,8 +10,7 @@ module.exports = function (app) {
     .post((req, res) => {
       let text = req.body.text;
       let locale = req.body.locale;
-      console.log(text)
-      console.log(locale)
+
       
       if (locale ==''|| locale ==undefined || locale ==null || text==undefined || text==null)
         return res.json({ error: 'Required field(s) missing' })
@@ -24,12 +23,10 @@ module.exports = function (app) {
         if (locale ==='american-to-british'){
 
           let translated=translator.AmericanBritish(text)
-          console.log(translated+"\n")
           return (res.json({'text':text,"translation":translated}))
         }
         else{
           let translated=translator.BritishAmerican(text)
-          console.log(translated+"\n")
           return (res.json({'text':text,"translation":translated}))
         }
         

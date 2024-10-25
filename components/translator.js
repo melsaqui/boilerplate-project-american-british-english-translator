@@ -6,43 +6,55 @@ const britishOnly = require('./british-only.js')
 class Translator {
     AmericanBritish(str){
         let strCopy = str.toLowerCase()
-
-       // console.log('her')
-       let same =true
+        let same =true
         let validTime = /^\d{1,2}:\d{2}$/
+        let newString= ''; 
 
+        
+        for(const [key, value] of Object.entries(americanOnly)){  
+            if (strCopy.includes(key+" " ) || strCopy.includes(key+"."))
+                strCopy = strCopy.replace(new RegExp(`\\b${key}\\b`, 'g'), `<span class="highlight">${value}</span>`);
+
+        }
+        for(const [key, value] of Object.entries(americanToBritishSpelling)){  
+            if (strCopy.includes(key+" " ) || strCopy.includes(key+"."))
+                strCopy = strCopy.replace(new RegExp(`\\b${key}\\b`, 'g'), `<span class="highlight">${value}</span>`);
+
+        }
         let words = str.split(' ')
         let wordsCopy = strCopy.split(' ')
-        let newString=''; 
-        let bInjson = false;
-        //console.log(Object.keys(americanOnly)[0])
-        
-         for (let i=0;i<wordsCopy.length;i++){
-            if (Object.keys(americanOnly).includes(wordsCopy[i])){
-                newString = str.replace((words[i]),'<span class="highlight">'+americanOnly[wordsCopy[i]]+"</span>")
-                same=false
-            }
-            else if(Object.keys(americanToBritishSpelling).includes(wordsCopy[i])){
-                newString = str.replace((words[i]),'<span class="highlight">'+americanToBritishSpelling[wordsCopy[i]]+"</span>")
-                same=false
-            }
-            else if(Object.keys(americanToBritishTitles).includes(wordsCopy[i])){
-                let title = americanToBritishTitles[wordsCopy[i]];
-                if (words[i][0].toUpperCase()==words[i][0]){
-                    //start=this.getKeyByValue(americanToBritishTitles, wordsCopy[i])
-                    title = title.replace(title.charAt(0),title.charAt(0).toUpperCase())
+        for (let i=0;i<wordsCopy.length;i++){
+            if (wordsCopy[i].match(validTime)){
+                let time =wordsCopy[i] 
+                if (wordsCopy[i][wordsCopy[i].length-1] =='.'||wordsCopy[i][wordsCopy[i].length-1] ==','||wordsCopy[i][wordsCopy[i].length-1] =='?'){
+                    time= wordsCopy[i].slice(0,wordsCopy[i].length-1)
                 }
-                newString = str.replace((words[i]),'<span class="highlight">'+ title +"</span>")
-                same=false
+                strCopy = strCopy.replace(time,'<span class="highlight">'+ time.replace(":",'.')+"</span>")
             }
-            else if (words[i].match(validTime)){
-                newString = str.replace((words[i]),'<span class="highlight">'+ words[i].replace(":",'.')+"</span>")
-                same=false
+            if(Object.keys(americanToBritishTitles).includes(wordsCopy[i])){
+                let title = americanToBritishTitles[wordsCopy[i]];
+                if (words[i][0] && words[i][0].toUpperCase() === wordsCopy[i][0].toUpperCase()) {
+                    title = title.charAt(0).toUpperCase() + title.slice(1);
+                }
+                strCopy = strCopy.replace(wordsCopy[i], '<span class="highlight">'.toLowerCase()+title+'</span>');
             }
-            //else
-            // newString+=words[i]+" "
-         }
-        if (same)
+         
+            
+        
+        }
+        wordsCopy = strCopy.split(' ')
+        words = str.split(" ")
+
+        let k=0;
+        for (let j=0; j<words.length ;j++){
+            if(wordsCopy.indexOf(words[j].toLowerCase())!=-1){
+                strCopy=strCopy.replace(wordsCopy[wordsCopy.indexOf(words[j].toLowerCase())]+" ",words[j]+" ")
+                
+            }
+        }
+        newString=strCopy
+        
+        if (newString==str)
             newString="Everything looks good to me!"
          return newString;
     
@@ -58,6 +70,60 @@ class Translator {
     
     BritishAmerican(str){
         let strCopy = str.toLowerCase()
+        let validTime = /^\d{1,2}.\d{2}/
+        let newString= ''; 
+
+
+        for(const [key, value] of Object.entries(britishOnly)){  
+            if (strCopy.includes(key+" " ) || strCopy.includes(key+"."))
+                strCopy = strCopy.replace(key, '<span class="highlight">'+value+'</span>');
+
+        }
+        for(const [key, value] of Object.entries(americanToBritishSpelling)){  
+            if (strCopy.includes(value+" " ) || strCopy.includes(value+"."))
+                strCopy = strCopy.replace(value, '<span class="highlight">'+key+'</span>');
+
+        }
+        let words = str.split(' ')
+        let wordsCopy = strCopy.split(' ')
+        for (let i=0;i<wordsCopy.length;i++){
+            if (wordsCopy[i].match(validTime)){
+                let time =wordsCopy[i] 
+                if (wordsCopy[i][wordsCopy[i].length-1] =='.'||wordsCopy[i][wordsCopy[i].length-1] ==','||wordsCopy[i][wordsCopy[i].length-1] =='?'){
+                    time= wordsCopy[i].slice(0,wordsCopy[i].length-1)
+                }
+                strCopy = strCopy.replace(time,'<span class="highlight">'+ time.replace(".",':')+"</span>")
+            }
+            else if(Object.values(americanToBritishTitles).includes(wordsCopy[i].toLowerCase())){
+                let title = this.getKeyByValue(americanToBritishTitles, wordsCopy[i]);
+                if (words[i][0].toUpperCase()==words[i][0]){
+                    title = title.replace(title.charAt(0),title.charAt(0).toUpperCase())
+                }
+                 strCopy= strCopy.replace((wordsCopy[i]),'<span class="highlight">'+ title +"</span>")
+            }
+         
+            
+        
+        }
+        wordsCopy = strCopy.split(' ')
+        words = str.split(" ")
+
+        let k=0;
+
+        for (let j=0; j<words.length ;j++){
+            if(wordsCopy.indexOf(words[j].toLowerCase())!=-1){
+                strCopy=strCopy.replace(wordsCopy[wordsCopy.indexOf(words[j].toLowerCase())],words[j])
+                
+            }
+        }
+            newString=strCopy
+          
+        //console.log(newString)
+        if (newString===str)
+            newString="Everything looks good to me!"
+         return newString;
+    
+       /* let strCopy = str.toLowerCase()
 
         // console.log('her')
         let same =true
@@ -66,17 +132,17 @@ class Translator {
          let words = str.split(' ')
          let wordsCopy = strCopy.split(' ')
  
-         
-         let newString=''; 
+        
+         let newString=str; 
          
           for (let i=0;i<words.length;i++){
              if (Object.values(britishOnly).includes(wordsCopy[i])){
-                  newString = str.replace((words[i]),'<span class="highlight">'+ britishOnly[wordsCopy[i]] + "</span>")
+                  newString = newString.replace((words[i]),'<span class="highlight">'+ britishOnly[wordsCopy[i]] + "</span>")
                  same= false
                  
              }
              else if(Object.values(americanToBritishSpelling).includes(wordsCopy[i])){
-                 newString = str.replace((words[i]),'<span class="highlight">'+ this.getKeyByValue(americanToBritishSpelling, wordsCopy[i])+"</span>")
+                 newString = newString.replace((words[i]),'<span class="highlight">'+ this.getKeyByValue(americanToBritishSpelling, wordsCopy[i])+"</span>")
                 same =false
              }
              else if(Object.values(americanToBritishTitles).includes(wordsCopy[i])){
@@ -85,11 +151,11 @@ class Translator {
                     //start=this.getKeyByValue(americanToBritishTitles, wordsCopy[i])
                     title = title.replace(title.charAt(0),title.charAt(0).toUpperCase())
                 }
-                 newString = str.replace((words[i]),'<span class="highlight">'+ title +"</span>")
+                 newString = newString.replace((words[i]),'<span class="highlight">'+ title +"</span>")
                 same=false
              }
              else if (words[i].match(validTime)){
-                 newString = str.replace((words[i]),'<span class="highlight">'+ words[i].replace(".",':')+"</span>")
+                 newString = newString.replace((words[i]),'<span class="highlight">'+ words[i].replace(".",':')+"</span>")
                 same=false
              }
              //else 
@@ -100,7 +166,7 @@ class Translator {
           //console.log(str.toLowerCase() === newString.toLowerCase())
           return newString;
      
-     }
+    */}
 }
 
 module.exports = Translator;
